@@ -1,0 +1,6 @@
+*.js      text eol=lf
+*.js.map  text eol=lf
+*.json    text eol=lf
+*.txt     text eol=lf
+*.yml     text eol=lf
+*.md      text eol=lf

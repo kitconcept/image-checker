@@ -1,0 +1,58 @@
+---
+name: 'Image Checker'
+description: 'Analyzes images files in a repository and validates their size and dimensions.'
+author: 'kitconcept GmbH'
+
+branding:
+  icon: 'image'
+  color: 'red'
+
+inputs:
+  file-extensions:
+    description: 'Comma-separated list of image file extensions.'
+    required: false
+    default: 'png,jpg,jpeg,gif,webp,avif,tiff,svg'
+
+  paths:
+    description: 'Comma-separated list of paths to scan for images.'
+    required: true
+
+  min-size:
+    description: 'Minimum allowed file size in bytes. Files smaller than this value will be flagged.'
+    required: false
+
+  max-size:
+    description: 'Maximum allowed file size in bytes. Files larger than this value will be flagged.'
+    required: false
+
+  min-width:
+    description: 'Minimum allowed image width in pixels. Images narrower than this value will be flagged.'
+    required: false
+
+  max-width:
+    description: 'Maximum allowed image width in pixels. Images wider than this value will be flagged.'
+    required: false
+
+  min-height:
+    description: 'Minimum allowed image height in pixels. Images shorter than this value will be flagged.'
+    required: false
+
+  max-height:
+    description: 'Maximum allowed image height in pixels. Images taller than this value will be flagged.'
+    required: false
+
+  fail-on-error:
+    description: 'If true (default), the action fails when any constraint is violated. Set to false to report violations as warnings without failing the workflow.'
+    required: false
+    default: 'true'
+
+outputs:
+  failed-files:
+    description: 'Comma-separated list of files that failed one or more checks.'
+
+  failed-count:
+    description: 'Number of files that failed one or more checks.'
+
+runs:
+  using: 'node24'
+  main: 'dist/index.js'
