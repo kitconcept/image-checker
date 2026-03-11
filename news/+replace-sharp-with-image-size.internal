@@ -1,1 +1,0 @@
-Replaced `sharp` with `image-size` for reading image dimensions, significantly reducing bundle size and removing native binary dependencies. @ericof
