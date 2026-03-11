@@ -140,7 +140,7 @@ describe('checkFile – missing file', () => {
     });
 
     expect(result.violations).toHaveLength(1);
-    expect(result.violations[0]).toMatch(/file not found/i);
+    expect(result.violations[0]).toMatchObject({ check: "Existence", value: "(missing)" });
   });
 });
 
@@ -179,7 +179,7 @@ describe('checkFile – file size', () => {
       maxHeight: null,
     });
     expect(result.violations).toHaveLength(1);
-    expect(result.violations[0]).toMatch(/below minimum/i);
+    expect(result.violations[0]).toMatchObject({ check: "File size", rule: expect.stringContaining("min") });
   });
 
   test('flags file above maxSize', async () => {
@@ -192,7 +192,7 @@ describe('checkFile – file size', () => {
       maxHeight: null,
     });
     expect(result.violations).toHaveLength(1);
-    expect(result.violations[0]).toMatch(/exceeds maximum/i);
+    expect(result.violations[0]).toMatchObject({ check: "File size", rule: expect.stringContaining("max") });
   });
 });
 
