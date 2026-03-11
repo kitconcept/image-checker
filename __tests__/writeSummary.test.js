@@ -34,6 +34,15 @@ describe("writeSummary – no violations", () => {
     expect(sum.addHeading).toHaveBeenCalledWith("Summary", 3);
   });
 
+  test("uses custom title when provided", async () => {
+    const sum = makeSummaryChain();
+    core.summary = sum;
+
+    await writeSummary({ filePaths: [], failedFiles: [], allViolations: [], title: "My custom check" });
+
+    expect(sum.addHeading).toHaveBeenCalledWith("My custom check", 2);
+  });
+
   test("does not write a Violations heading when all files pass", async () => {
     const sum = makeSummaryChain();
     core.summary = sum;

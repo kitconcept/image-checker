@@ -25814,9 +25814,10 @@ async function checkFile(filePath, constraints) {
  * @param {string[]} params.filePaths      - All files that were checked.
  * @param {string[]} params.failedFiles    - Files that failed one or more checks.
  * @param {Array<{filePath: string, violations: Array<{check: string, value: string, rule: string}>}>} params.allViolations - Per-file violations.
+ * @param {string} [params.title]          - Heading for the summary section (default: "Image Checker").
  */
-async function writeSummary({ filePaths, failedFiles, allViolations }) {
-  const sum = core.summary.addHeading("Image Checker", 2);
+async function writeSummary({ filePaths, failedFiles, allViolations, title = "Image Checker" }) {
+  const sum = core.summary.addHeading(title, 2);
 
   const summaryTable = [
     [
@@ -25858,6 +25859,7 @@ async function run() {
   const rawPaths = core.getInput("paths", { required: true });
   const rawExtensions = core.getInput("file-extensions");
   const failOnError = core.getInput("fail-on-error") !== "false";
+  const summaryTitle = core.getInput("summary-title") || "Image Checker";
   const searchPaths = parsePaths(rawPaths);
   const extensions = parseExtensions(rawExtensions);
 
@@ -25934,7 +25936,7 @@ async function run() {
   core.setOutput("failed-count", String(failedFiles.length));
 
   // --- Write summary ---
-  await writeSummary({ filePaths, failedFiles, allViolations });
+  await writeSummary({ filePaths, failedFiles, allViolations, title: summaryTitle });
 
   // --- Report issues ---
   core.info(infoMsgs.join("\n"));

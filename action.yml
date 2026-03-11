@@ -46,6 +46,11 @@ inputs:
     required: false
     default: 'true'
 
+  summary-title:
+    description: 'Title to use for the GitHub Step Summary section. Defaults to "Image Checker".'
+    required: false
+    default: ''
+
 outputs:
   failed-files:
     description: 'Comma-separated list of files that failed one or more checks.'

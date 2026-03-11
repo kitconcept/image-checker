@@ -1,1 +1,1 @@
-File paths in violation reports are now relative to the repository root instead of the runner root. Each violation is displayed in a structured format with Check, Value, and Rule columns. @ericof
+File paths in violation reports are now relative to the repository root instead of the runner root. Each violation is displayed in a structured format with Check, Value, and Rule columns. Added `summary-title` input to customize the GitHub Step Summary section heading (defaults to "Image Checker"). @ericof

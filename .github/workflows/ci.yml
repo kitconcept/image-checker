@@ -82,6 +82,7 @@ jobs:
           max-width: '640'
           max-height: '480'
           fail-on-error: false
+          summary-title: 'Run with image and height'
 
       - name: Run with size
         id: image-check-02
@@ -90,6 +91,7 @@ jobs:
           paths: '__tests__/fixtures'
           max-size: '524288'
           fail-on-error: false
+          summary-title: 'Run with size'
 
       - name: Display Summary
         if: ${{ success() || failure() }}
