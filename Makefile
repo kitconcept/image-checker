@@ -85,6 +85,6 @@ dry-run: lint test ## Simulate a release: shows changelog draft, no commits, no 
 	@pnpm run dry-release
 
 .PHONY: release
-release: lint test ## Create a new release (interactive: bumps version, updates changelog, pushes tag, creates GitHub release)
+release: lint test  ## Create a new release (interactive: bumps version, updates changelog, pushes tag, creates GitHub release)
 	@echo "🚀 Starting release..."
 	@pnpm run release
