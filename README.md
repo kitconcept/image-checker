@@ -35,6 +35,7 @@ Designed to prevent large or oversized images from being committed to projects.
 | `min-height`          | Minimum image height in **pixels**. Images shorter than this are flagged. |                                        |          |
 | `max-height`          | Maximum image height in **pixels**. Images taller than this are flagged.  |                                        |          |
 | `fail-on-error`       | Set to `false` to report violations as warnings without failing the workflow. | `true`                             |          |
+| `summary-title`       | Title for the GitHub Step Summary section.                                    | `Image Checker`                    |          |
 
 > All size/dimension inputs are optional. If none are provided, the action
 > simply verifies that all matched files exist.
@@ -61,6 +62,7 @@ Designed to prevent large or oversized images from being committed to projects.
     max-size: '2097152'   # 2 MB
     max-width: '1920'
     max-height: '1080'
+    summary-title: 'Check images'   # optional: customise the Step Summary heading
 ```
 
 ### With a changed-files step (recommended for PRs)

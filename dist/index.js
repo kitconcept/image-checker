@@ -25734,10 +25734,21 @@ function getOptionalInt(name) {
 }
 
 /**
+ * Converts an absolute file path to a path relative to the repository root.
+ * Uses GITHUB_WORKSPACE when running in GitHub Actions, or process.cwd() locally.
+ * @param {string} absolutePath
+ * @returns {string}
+ */
+function toRelativePath(absolutePath) {
+  const base = process.env.GITHUB_WORKSPACE || process.cwd();
+  return path.relative(base, absolutePath);
+}
+
+/**
  * Checks a single file against all provided constraints.
  * @param {string} filePath - Path to the image file.
  * @param {object} constraints - The constraints to check against.
- * @returns {Promise<{file: string, violations: string[]}>}
+ * @returns {Promise<{file: string, violations: Array<{check: string, value: string, rule: string}>}>}
  */
 async function checkFile(filePath, constraints) {
   const violations = [];
@@ -25745,7 +25756,7 @@ async function checkFile(filePath, constraints) {
 
   // --- Check file existence ---
   if (!fs.existsSync(absolutePath)) {
-    violations.push(`File not found: ${filePath}`);
+    violations.push({ check: "Existence", value: "(missing)", rule: "File must exist" });
     return { file: filePath, violations };
   }
 
@@ -25755,14 +25766,10 @@ async function checkFile(filePath, constraints) {
     const fileSizeBytes = stats.size;
 
     if (constraints.minSize !== null && fileSizeBytes < constraints.minSize) {
-      violations.push(
-        `File size ${fileSizeBytes} bytes is below minimum ${constraints.minSize} bytes`,
-      );
+      violations.push({ check: "File size", value: `${fileSizeBytes} bytes`, rule: `min ${constraints.minSize} bytes` });
     }
     if (constraints.maxSize !== null && fileSizeBytes > constraints.maxSize) {
-      violations.push(
-        `File size ${fileSizeBytes} bytes exceeds maximum ${constraints.maxSize} bytes`,
-      );
+      violations.push({ check: "File size", value: `${fileSizeBytes} bytes`, rule: `max ${constraints.maxSize} bytes` });
     }
   }
 
@@ -25778,31 +25785,23 @@ async function checkFile(filePath, constraints) {
     try {
       dimensions = await getImageDimensions(absolutePath);
     } catch (err) {
-      violations.push(`Could not read image dimensions: ${err.message}`);
+      violations.push({ check: "Dimensions", value: "(error)", rule: err.message });
       return { file: filePath, violations };
     }
 
     const { width, height } = dimensions;
 
     if (constraints.minWidth !== null && width < constraints.minWidth) {
-      violations.push(
-        `Image width ${width}px is below minimum ${constraints.minWidth}px`,
-      );
+      violations.push({ check: "Width", value: `${width}px`, rule: `min ${constraints.minWidth}px` });
     }
     if (constraints.maxWidth !== null && width > constraints.maxWidth) {
-      violations.push(
-        `Image width ${width}px exceeds maximum ${constraints.maxWidth}px`,
-      );
+      violations.push({ check: "Width", value: `${width}px`, rule: `max ${constraints.maxWidth}px` });
     }
     if (constraints.minHeight !== null && height < constraints.minHeight) {
-      violations.push(
-        `Image height ${height}px is below minimum ${constraints.minHeight}px`,
-      );
+      violations.push({ check: "Height", value: `${height}px`, rule: `min ${constraints.minHeight}px` });
     }
     if (constraints.maxHeight !== null && height > constraints.maxHeight) {
-      violations.push(
-        `Image height ${height}px exceeds maximum ${constraints.maxHeight}px`,
-      );
+      violations.push({ check: "Height", value: `${height}px`, rule: `max ${constraints.maxHeight}px` });
     }
   }
 
@@ -25814,10 +25813,11 @@ async function checkFile(filePath, constraints) {
  * @param {object} params
  * @param {string[]} params.filePaths      - All files that were checked.
  * @param {string[]} params.failedFiles    - Files that failed one or more checks.
- * @param {Array<{filePath: string, violations: string[]}>} params.allViolations - Per-file violations.
+ * @param {Array<{filePath: string, violations: Array<{check: string, value: string, rule: string}>}>} params.allViolations - Per-file violations.
+ * @param {string} [params.title]          - Heading for the summary section (default: "Image Checker").
  */
-async function writeSummary({ filePaths, failedFiles, allViolations }) {
-  const sum = core.summary.addHeading("Image Checker", 2);
+async function writeSummary({ filePaths, failedFiles, allViolations, title = "Image Checker" }) {
+  const sum = core.summary.addHeading(title, 2);
 
   const summaryTable = [
     [
@@ -25838,8 +25838,8 @@ async function writeSummary({ filePaths, failedFiles, allViolations }) {
     for (const violation of allViolations) {
       sum.addHeading(violation.filePath, 4);
       sum.addTable([
-        [{ header: true, data: "Violation" }],
-        ...violation.violations.map((v) => [{ data: v }]),
+        [{ header: true, data: "Check" }, { header: true, data: "Value" }, { header: true, data: "Rule" }],
+        ...violation.violations.map((v) => [{ data: v.check }, { data: v.value }, { data: v.rule }]),
       ]);
     }
   }
@@ -25859,6 +25859,7 @@ async function run() {
   const rawPaths = core.getInput("paths", { required: true });
   const rawExtensions = core.getInput("file-extensions");
   const failOnError = core.getInput("fail-on-error") !== "false";
+  const summaryTitle = core.getInput("summary-title") || "Image Checker";
   const searchPaths = parsePaths(rawPaths);
   const extensions = parseExtensions(rawExtensions);
 
@@ -25911,21 +25912,22 @@ async function run() {
     : core.warning.bind(core);
 
   for (const filePath of filePaths) {
-    infoMsgs.push(`\nChecking: ${filePath}`);
+    const displayPath = toRelativePath(filePath);
+    infoMsgs.push(`\nChecking: ${displayPath}`);
     const result = await checkFile(filePath, constraints);
 
     if (result.violations.length > 0) {
-      const fileViolations = { filePath, violations: [] };
-      failedFiles.push(filePath);
-      errorMsgs.push(`${filePath} failed ${result.violations.length} check(s):`);
+      const fileViolations = { filePath: displayPath, violations: [] };
+      failedFiles.push(displayPath);
+      errorMsgs.push(`${displayPath} failed ${result.violations.length} check(s):`);
       for (const violation of result.violations) {
-        errorMsgs.push(`   - ${violation}`);
+        errorMsgs.push(`   - ${violation.check}: ${violation.value} (rule: ${violation.rule})`);
         fileViolations.violations.push(violation);
       }
-      infoMsgs.push(`❗ ${filePath} did not pass the check`);
+      infoMsgs.push(`❗ ${displayPath} did not pass the check`);
       allViolations.push(fileViolations);
     } else {
-      infoMsgs.push(`✅ ${filePath} passed all checks`);
+      infoMsgs.push(`✅ ${displayPath} passed all checks`);
     }
   }
 
@@ -25934,7 +25936,7 @@ async function run() {
   core.setOutput("failed-count", String(failedFiles.length));
 
   // --- Write summary ---
-  await writeSummary({ filePaths, failedFiles, allViolations });
+  await writeSummary({ filePaths, failedFiles, allViolations, title: summaryTitle });
 
   // --- Report issues ---
   core.info(infoMsgs.join("\n"));
@@ -25960,6 +25962,7 @@ module.exports = {
   parseExtensions,
   findFiles,
   getOptionalInt,
+  toRelativePath,
 };
 
 

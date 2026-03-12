@@ -34,6 +34,15 @@ describe("writeSummary – no violations", () => {
     expect(sum.addHeading).toHaveBeenCalledWith("Summary", 3);
   });
 
+  test("uses custom title when provided", async () => {
+    const sum = makeSummaryChain();
+    core.summary = sum;
+
+    await writeSummary({ filePaths: [], failedFiles: [], allViolations: [], title: "My custom check" });
+
+    expect(sum.addHeading).toHaveBeenCalledWith("My custom check", 2);
+  });
+
   test("does not write a Violations heading when all files pass", async () => {
     const sum = makeSummaryChain();
     core.summary = sum;
@@ -80,7 +89,7 @@ describe("writeSummary – with violations", () => {
   const allViolations = [
     {
       filePath: "img/a.png",
-      violations: ["File size 5000 bytes exceeds maximum 1000 bytes"],
+      violations: [{ check: "File size", value: "5000 bytes", rule: "max 1000 bytes" }],
     },
   ];
 
@@ -112,7 +121,9 @@ describe("writeSummary – with violations", () => {
     const violationTable = sum.addTable.mock.calls[1][0];
     const dataRows = violationTable.slice(1); // skip header row
     expect(dataRows).toHaveLength(1);
-    expect(dataRows[0][0].data).toBe("File size 5000 bytes exceeds maximum 1000 bytes");
+    expect(dataRows[0][0].data).toBe("File size");
+    expect(dataRows[0][1].data).toBe("5000 bytes");
+    expect(dataRows[0][2].data).toBe("max 1000 bytes");
   });
 
   test("summary table reflects correct failed count", async () => {
@@ -131,8 +142,8 @@ describe("writeSummary – with violations", () => {
     core.summary = sum;
 
     const multiViolations = [
-      { filePath: "x.png", violations: ["too big"] },
-      { filePath: "y.png", violations: ["too wide", "too tall"] },
+      { filePath: "x.png", violations: [{ check: "File size", value: "5000 bytes", rule: "max 1000 bytes" }] },
+      { filePath: "y.png", violations: [{ check: "Width", value: "1000px", rule: "max 640px" }, { check: "Height", value: "500px", rule: "max 480px" }] },
     ];
 
     await writeSummary({ filePaths: ["x.png", "y.png"], failedFiles: ["x.png", "y.png"], allViolations: multiViolations });

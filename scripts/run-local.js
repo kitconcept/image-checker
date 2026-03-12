@@ -79,7 +79,7 @@ async function main() {
       failedFiles.push(filePath);
       console.error(`\u274c ${filePath}`);
       for (const v of result.violations) {
-        console.error(`   - ${v}`);
+        console.error(`   - ${v.check}: ${v.value} (rule: ${v.rule})`);
       }
     } else {
       console.log(`\u2705 ${filePath}`);
