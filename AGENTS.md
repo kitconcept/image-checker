@@ -31,9 +31,9 @@ Any references to `image-checker`, `kitconcept/image-checker`, or Plone-specific
 
 | Concern          | Technology                                      |
 |------------------|-------------------------------------------------|
-| Runtime          | Node.js 20                                      |
+| Runtime          | Node.js 24                                      |
 | Action framework | `@actions/core`                                 |
-| Image decoding   | `sharp` (libvips-backed)                        |
+| Image decoding   | `image-size`                                    |
 | Bundler          | `@vercel/ncc` → `dist/index.js`                 |
 | Tests            | Jest with coverage                              |
 | Linter           | ESLint                                          |
@@ -73,7 +73,7 @@ image-checker/
 
 ### `src/imageUtils.js`
 
-- **`getImageDimensions(absolutePath)`** — calls `sharp(path).metadata()` and returns `{ width, height }`. Throws a descriptive error if dimensions cannot be determined.
+- **`getImageDimensions(absolutePath)`** — calls `image-size` on the file and returns `{ width, height }`. Throws a descriptive error if dimensions cannot be determined.
 
 ### `action.yml`
 
@@ -140,7 +140,7 @@ The CI pipeline (`ci.yml`) verifies that `dist/` is in sync with `src/`.
 
 ## Supported image formats
 
-Handled by `sharp` (libvips): **JPEG, PNG, WebP, GIF, AVIF, TIFF, SVG, HEIF/HEIC**.
+Handled by `image-size`: **JPEG, PNG, WebP, GIF, AVIF, TIFF, SVG, BMP, ICO, and more**.
 
 ---
 
