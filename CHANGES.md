@@ -9,6 +9,19 @@
 
 <!-- towncrier release notes start -->
 
+## 1.1.0 (2026-03-11)
+
+
+### Feature
+
+- File paths in violation reports are now relative to the repository root instead of the runner root. Each violation is displayed in a structured format with Check, Value, and Rule columns. Added `summary-title` input to customize the GitHub Step Summary section heading (defaults to "Image Checker"). @ericof [#1](https://github.com/kitconcept/image-checker/issue/1)
+
+
+### Documentation
+
+- Added CODEOWNERS file assigning @kitconcept/devops as code owner for all files. @ericof [#3](https://github.com/kitconcept/image-checker/issue/3)
+- Updated AGENTS.md to reflect the correct tech stack: Node.js 24 (not 20) and `image-size` (not `sharp`). @ericof 
+
 ## 1.0.0 (2026-03-11)
 
 

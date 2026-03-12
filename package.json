@@ -1,6 +1,6 @@
 {
   "name": "image-checker",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "GitHub Action to analyze and validate images added to Plone repositories.",
   "main": "dist/index.js",
   "scripts": {
